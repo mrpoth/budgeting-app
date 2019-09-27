@@ -7,6 +7,13 @@
     <title>My Budget</title>
 </head>
 <body>
+    <nav>
+        <ul>
+            <a href="/"><li>Main</li></a>
+            <a href="/incomes"><li>Incomes</li></a>
+            <a href="/expenses"><li>Expenses</li></a>
+        </ul>
+    </nav>
     @yield('body')
 </body>
 </html>
