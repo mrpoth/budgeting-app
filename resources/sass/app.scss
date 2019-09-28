@@ -6,3 +6,35 @@
 
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
+
+$main-color: #0b1824;
+$secondary-color: #001f3f;
+@mixin standard-container {
+    margin: 20px auto;
+    padding: 0.5rem 3rem;
+    text-align:center;
+}
+
+@mixin absolute-center {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+  }
+  body {
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: $main-color;
+    color:#fff;
+  }
+
+  .content-container {
+    @include standard-container;
+    max-width: 75rem;
+  }
+  .form-container {
+      @include standard-container;
+      max-width:25rem;
+  }
+$main-color: #0b1824;
+$secondary-color: #001f3f;

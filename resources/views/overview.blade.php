@@ -1,7 +1,9 @@
 @extends('layouts.main')
 
 @section('body')
-<h1>My financials</h1>
-<p>Welcome to your budget. Enter your <a href="/incomes">incomes</a> or your <a href="/expenses">expenses</a></p>
+<div class="content-container">
+        <h1>My financials</h1>
+        <p>Welcome to your budget. Use the links above to enter and/or see your finances!</p>
+</div>
 @endsection
 

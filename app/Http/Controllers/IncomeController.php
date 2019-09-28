@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Income;
 
 class IncomeController extends Controller
 {
@@ -12,8 +13,17 @@ class IncomeController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
+
     {
-        return view('incomes.index');
+        $incomes = Income::all();
+
+        $income_amounts = Income::all()->map->income_amount;
+        $income_totals = collect($income_amounts)->sum();
+
+        return view('incomes.index', [
+            'incomes' => $incomes,
+            'income_totals' => $income_totals
+            ]);
     }
 
     /**
@@ -32,10 +42,19 @@ class IncomeController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
-        //
-    }
+    // public function store(Request $request)
+    // {
+
+    // }
+
+        public function store ()
+        {
+            $attributes = request()->all();
+
+            Income::create($attributes);
+
+            return redirect('/incomes');
+        }
 
     /**
      * Display the specified resource.
@@ -43,9 +62,9 @@ class IncomeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Income $income)
     {
-        //
+        return view('incomes.show', compact('income'));
     }
 
     /**
@@ -54,9 +73,9 @@ class IncomeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Income $income)
     {
-        //
+        return view('incomes.edit', compact('income'));
     }
 
     /**
@@ -66,9 +85,16 @@ class IncomeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Income $income)
     {
-        //
+        $income->update(request([
+            'income_title',
+            'income_amount',
+            'income_frequency',
+            'income_reccuring'
+        ]));
+
+        return redirect('/incomes');
     }
 
     /**
@@ -77,8 +103,9 @@ class IncomeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Income $income)
     {
-        //
+        $income->delete();
+        return redirect('/incomes');
     }
 }

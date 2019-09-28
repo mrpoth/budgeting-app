@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Expense;
 
 class ExpenseController extends Controller
 {
@@ -13,7 +14,15 @@ class ExpenseController extends Controller
      */
     public function index()
     {
-        return view ('expenses.index');
+        $expenses = Expense::all();
+
+        $expense_amounts = $expenses->map->expense_amount;
+        $expense_totals = collect($expense_amounts)->sum();
+
+        return view('expenses.index', [
+            'expenses' => $expenses,
+            'expense_totals' => $expense_totals
+            ]);
     }
 
     /**
@@ -23,7 +32,7 @@ class ExpenseController extends Controller
      */
     public function create()
     {
-        //
+        return view ('expenses.create');
     }
 
     /**
@@ -34,7 +43,11 @@ class ExpenseController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $attributes = request()->all();
+
+        Expense::create($attributes);
+
+        return redirect('/expenses');
     }
 
     /**
@@ -43,9 +56,9 @@ class ExpenseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Expense $expense)
     {
-        //
+        return view('expenses.show', compact('expense'));
     }
 
     /**
@@ -54,9 +67,9 @@ class ExpenseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Expense $expense)
     {
-        //
+        return view('expenses.edit', compact('expense'));
     }
 
     /**
@@ -66,9 +79,16 @@ class ExpenseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Expense $expense)
     {
-        //
+        $expense->update(request([
+            'expense_title',
+            'expense_amount',
+            'expense_frequency',
+            'expense_reccuring'
+        ]));
+
+        return redirect('/expenses');
     }
 
     /**
@@ -77,8 +97,10 @@ class ExpenseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Expense $expense)
     {
-        //
+        $expense->delete();
+
+        return redirect('/expenses');
     }
 }

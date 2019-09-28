@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <title>My Budget</title>
 </head>
 <body>
-    <nav>
-        <ul>
-            <a href="/"><li>Main</li></a>
-            <a href="/incomes"><li>Incomes</li></a>
-            <a href="/expenses"><li>Expenses</li></a>
+        <ul class="nav nav-pills justify-content-center">
+            <li class="nav-item"><a class="nav-link" href="/">Main</a></li>
+            <li class="nav-item"><a class="nav-link" href="/incomes">Incomes</a></li>
+            <li class="nav-item"><a class="nav-link" href="/expenses">Expenses</a></li>
         </ul>
-    </nav>
     @yield('body')
 </body>
 </html>

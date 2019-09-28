@@ -10644,3 +10644,24 @@ a.text-dark:focus {
   }
 }
 
+body {
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: #0b1824;
+  color: #fff;
+}
+
+.content-container {
+  margin: 20px auto;
+  padding: 0.5rem 3rem;
+  text-align: center;
+  max-width: 75rem;
+}
+
+.form-container {
+  margin: 20px auto;
+  padding: 0.5rem 3rem;
+  text-align: center;
+  max-width: 25rem;
+}
+
