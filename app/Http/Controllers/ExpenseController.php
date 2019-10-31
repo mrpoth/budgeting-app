@@ -18,27 +18,27 @@ class ExpenseController extends Controller
     {
         $expenses = DB::table('expenses')->paginate(15);
 
-//        $weekly_expenses = DB::table('expenses')->where('frequency' , '=', 7)->sum('amount');
-//        $weekly_as_daily = round($weekly_expenses / 7 , 2);
-//
-//        $monthly_expenses = DB::table('expenses')->where('frequency' , '=', 30)->sum('amount');
-//        $monthly_as_daily = round($monthly_expenses / 30 , 2);
-//
-//        $annual_expenses = DB::table('expenses')->where('frequency' , '=', 365)->sum('amount');
-//        $annual_as_daily = round($annual_expenses / 365 , 2);
+        $weekly_expenses = DB::table('expenses')->where('frequency' , '=', 7)->sum('amount');
+        $weekly_as_daily = round($weekly_expenses / 7 , 2);
 
-        $expense_totals = DB::table('expenses')->sum('amount');
+        $monthly_expenses = DB::table('expenses')->where('frequency' , '=', 30)->sum('amount');
+        $monthly_as_daily = round($monthly_expenses / 30 , 2);
 
-        $weekly_expenses = round($expense_totals / 52, 2);
-        $monthly_expenses = round($expense_totals / 12, 2);
-        $annual_expenses = $weekly_expenses * 52;
+        $annual_expense = DB::table('expenses')->where('frequency', '=', 365)->sum('amount');
+        $annual_expenses = ($weekly_expenses * 52) + ($monthly_expenses *12) + $annual_expense;
+        $annual_as_daily = round($annual_expenses / 365 , 2);
+
+        $expenses_by_week = $annual_expenses / 52;
+        $expenses_by_month = $annual_expenses / 12;
+
 
         return view('expenses.index', [
             'expenses' => $expenses,
-            'expense_totals' => $expense_totals,
+            'expenses_by_week' => $expenses_by_week,
             'weekly_expenses' => $weekly_expenses,
+            'expenses_by_month' => $expenses_by_month,
             'monthly_expenses' => $monthly_expenses,
-            'annual_expenses' => $annual_expenses
+            'annual_expenses' => $annual_expenses,
             ]);
     }
 

@@ -51,11 +51,7 @@
 @endforeach
         </tbody>
       </table>
-    <h3> Total expenses: {{$expense_totals}}</h3>
-    <h3>Weekly: {{$weekly_expenses}}</h3>
-    <h3>Monthly: {{$monthly_expenses}}</h3>
+    <h3>Weekly: {{$expenses_by_week}}</h3>
+    <h3>Monthly: {{$expenses_by_month}}</h3>
     <h3>Annually: {{$annual_expenses}}</h3>
-    <a href="/expenses/create">Add new expense</a>
-</div>
-</div>
 @endsection
