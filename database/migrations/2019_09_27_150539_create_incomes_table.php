@@ -15,10 +15,10 @@ class CreateIncomesTable extends Migration
     {
         Schema::create('incomes', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('income_title');
-            $table->decimal('income_amount', 10, 2);
-            $table->boolean('income_recurring');
-            $table->string('income_frequency');
+            $table->string('title');
+            $table->decimal('amount', 10, 2);
+            $table->boolean('recurring');
+            $table->string('frequency');
             $table->timestamps();
         });
     }

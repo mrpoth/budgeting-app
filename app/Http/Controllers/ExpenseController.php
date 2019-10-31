@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Expense;
+use Illuminate\Support\Facades\DB;
 
 class ExpenseController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      *
@@ -14,14 +16,29 @@ class ExpenseController extends Controller
      */
     public function index()
     {
-        $expenses = Expense::all();
+        $expenses = DB::table('expenses')->paginate(15);
 
-        $expense_amounts = $expenses->map->expense_amount;
-        $expense_totals = collect($expense_amounts)->sum();
+//        $weekly_expenses = DB::table('expenses')->where('frequency' , '=', 7)->sum('amount');
+//        $weekly_as_daily = round($weekly_expenses / 7 , 2);
+//
+//        $monthly_expenses = DB::table('expenses')->where('frequency' , '=', 30)->sum('amount');
+//        $monthly_as_daily = round($monthly_expenses / 30 , 2);
+//
+//        $annual_expenses = DB::table('expenses')->where('frequency' , '=', 365)->sum('amount');
+//        $annual_as_daily = round($annual_expenses / 365 , 2);
+
+        $expense_totals = DB::table('expenses')->sum('amount');
+
+        $weekly_expenses = round($expense_totals / 52, 2);
+        $monthly_expenses = round($expense_totals / 12, 2);
+        $annual_expenses = $weekly_expenses * 52;
 
         return view('expenses.index', [
             'expenses' => $expenses,
-            'expense_totals' => $expense_totals
+            'expense_totals' => $expense_totals,
+            'weekly_expenses' => $weekly_expenses,
+            'monthly_expenses' => $monthly_expenses,
+            'annual_expenses' => $annual_expenses
             ]);
     }
 
@@ -43,7 +60,19 @@ class ExpenseController extends Controller
      */
     public function store(Request $request)
     {
-        $attributes = request()->all();
+        // $attributes = request([
+        //     'expense_title',
+        //     'expense_amount',
+        //     'expense_frequency',
+        //     'expense_recurring',
+        // ]);
+
+        $attributes = request()->validate([
+            'title' => ['required', 'min:3'],
+            'amount' => ['required', 'numeric'],
+            'frequency' => 'required',
+            'recurring' => ['required', 'boolean']
+        ]);
 
         Expense::create($attributes);
 
@@ -82,10 +111,10 @@ class ExpenseController extends Controller
     public function update(Expense $expense)
     {
         $expense->update(request([
-            'expense_title',
-            'expense_amount',
-            'expense_frequency',
-            'expense_reccuring'
+            'title',
+            'amount',
+            'frequency',
+            'recurring'
         ]));
 
         return redirect('/expenses');
@@ -103,4 +132,5 @@ class ExpenseController extends Controller
 
         return redirect('/expenses');
     }
+
 }

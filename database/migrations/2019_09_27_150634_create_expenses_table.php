@@ -15,10 +15,10 @@ class CreateExpensesTable extends Migration
     {
         Schema::create('expenses', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('expense_title');
-            $table->decimal('expense_amount', 10, 2);
-            $table->boolean('expense_recurring');
-            $table->string('expense_frequency');
+            $table->string('title');
+            $table->decimal('amount', 10, 2);
+            $table->boolean('recurring');
+            $table->integer('frequency');
             $table->timestamps();
         });
     }

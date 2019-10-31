@@ -19,11 +19,28 @@
           @foreach ($expenses as $expense)
   <tr>
       <th scope="row">{{$expense->id}}</th>
-      <td>{{$expense->expense_title}}</td>
-      <td>{{$expense->expense_amount}}</td>
-      <td>{{$expense->expense_frequency}}</td>
+      <td>{{$expense->title}}</td>
+      <td>{{$expense->amount}}</td>
       <td>
-          @if ($expense->expense_recurring)
+          @switch($expense->frequency)
+              @case(1)
+              Daily
+                  @break
+              @case(7)
+              Weekly
+                  @break
+              @case(30)
+              Monthly
+                  @break
+              @case(365)
+              Annually
+                  @break
+              @default
+
+          @endswitch
+        </td>
+      <td>
+          @if ($expense->recurring)
           Yes
           @else
           No
@@ -34,8 +51,11 @@
 @endforeach
         </tbody>
       </table>
-      <h3>Total expenses: {{$expense_totals}} </h3>
-<a href="/expenses/create">Add new expense</a>
+    <h3> Total expenses: {{$expense_totals}}</h3>
+    <h3>Weekly: {{$weekly_expenses}}</h3>
+    <h3>Monthly: {{$monthly_expenses}}</h3>
+    <h3>Annually: {{$annual_expenses}}</h3>
+    <a href="/expenses/create">Add new expense</a>
 </div>
 </div>
 @endsection

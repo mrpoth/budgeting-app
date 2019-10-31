@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Income;
+use Illuminate\Support\Facades\DB;
 
 class IncomeController extends Controller
 {
@@ -15,10 +16,8 @@ class IncomeController extends Controller
     public function index()
 
     {
-        $incomes = Income::all();
-
-        $income_amounts = Income::all()->map->income_amount;
-        $income_totals = collect($income_amounts)->sum();
+        $incomes = DB::table('incomes')->paginate(15);
+        $income_totals = DB::table('incomes')->sum('amount');
 
         return view('incomes.index', [
             'incomes' => $incomes,
@@ -47,9 +46,14 @@ class IncomeController extends Controller
 
     // }
 
-        public function store ()
+        public function store (Request $request)
         {
-            $attributes = request()->all();
+            $attributes = request()->validate([
+                'title' => ['required', 'min:3'],
+                'amount' => ['required', 'numeric'],
+                'frequency' => 'required',
+                'recurring' => ['required', 'boolean']
+            ]);
 
             Income::create($attributes);
 
@@ -88,10 +92,10 @@ class IncomeController extends Controller
     public function update(Income $income)
     {
         $income->update(request([
-            'income_title',
-            'income_amount',
-            'income_frequency',
-            'income_reccuring'
+            'title',
+            'amount',
+            'frequency',
+            'recurring'
         ]));
 
         return redirect('/incomes');
