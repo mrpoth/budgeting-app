@@ -18,27 +18,39 @@ class ExpenseController extends Controller
     {
         $expenses = DB::table('expenses')->paginate(15);
 
-        $weekly_expenses = DB::table('expenses')->where('frequency' , '=', 7)->sum('amount');
-        $weekly_as_daily = round($weekly_expenses / 7 , 2);
+        $daily_expenses_recurring = DB::table('expenses')->whereRaw('frequency = 1 AND recurring = 1')->sum('amount');
+        $daily_expenses_non_recurring = DB::table('expenses')->where('frequency', '=', '1')->sum('amount');
 
-        $monthly_expenses = DB::table('expenses')->where('frequency' , '=', 30)->sum('amount');
-        $monthly_as_daily = round($monthly_expenses / 30 , 2);
+        $weekly_expenses_recurring = DB::table('expenses')->whereRaw('frequency = 7 AND recurring = 1')->sum('amount');
+        $weekly_expenses_non_recurring =DB::table('expenses')->where('frequency', '=', '7')->sum('amount');
 
-        $annual_expense = DB::table('expenses')->where('frequency', '=', 365)->sum('amount');
-        $annual_expenses = ($weekly_expenses * 52) + ($monthly_expenses *12) + $annual_expense;
-        $annual_as_daily = round($annual_expenses / 365 , 2);
+        //Calculate weekly-only expenses as expressed in a single day. E.g. paying 70 a week means you pay 10/day.
+        $weekly_as_daily = round($weekly_expenses_recurring / 7 , 2);
 
-        $expenses_by_week = $annual_expenses / 52;
-        $expenses_by_month = $annual_expenses / 12;
+        $monthly_expenses_recurring = DB::table('expenses')->whereRaw('frequency = 30 AND recurring = 1')->sum('amount');
+        $monthly_expenses_non_recurring = DB::table('expenses')->where('frequency', '=', '30')->sum('amount');
+
+        //Calculate monthly-only recurring expenses as expressed in a single day. E.g. paying 30 a month month means you pay 1/day.
+        //Not too accurate because it treats every month as having 30 days.
+        $recurring_monthly_as_daily = round($monthly_expenses_recurring / 30 , 2);
+
+        $annual_expenses_recurring = DB::table('expenses')->whereraw('frequency = 365 AND recurring = 1')->sum('amount');
+        $annual_expenses_non_recurring = DB::table('expenses')->where('frequency', '=', '365')->sum('amount');
+
+        //Calculate total recurring annual expenses.
+        $recurring_expenses_by_year = ($daily_expenses_recurring * 365) + ($weekly_expenses_recurring * 52) + ($monthly_expenses_recurring *12) + $annual_expenses_recurring;
+        //Calculate annual-only recurring expenses as expressed in a single day. E.g. paying 365 a year means you pay 1/day.
+        $annual_as_daily = round($recurring_expenses_by_year / 365 , 2);
+
+        $recurring_expenses_by_week = round($recurring_expenses_by_year / 52, 2);
+        $recurring_expenses_by_month = round($recurring_expenses_by_year / 12, 2);
 
 
         return view('expenses.index', [
             'expenses' => $expenses,
-            'expenses_by_week' => $expenses_by_week,
-            'weekly_expenses' => $weekly_expenses,
-            'expenses_by_month' => $expenses_by_month,
-            'monthly_expenses' => $monthly_expenses,
-            'annual_expenses' => $annual_expenses,
+            'recurring_expenses_by_week' => $recurring_expenses_by_week,
+            'recurring_expenses_by_month' => $recurring_expenses_by_month,
+            'recurring_expenses_by_year' => $recurring_expenses_by_year,
             ]);
     }
 

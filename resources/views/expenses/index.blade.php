@@ -7,7 +7,6 @@
 <table class="table table-dark">
         <thead>
           <tr>
-            <th scope="col">#</th>
             <th scope="col">Expense</th>
             <th scope="col">Amount</th>
             <th scope="col">Frequency</th>
@@ -18,7 +17,6 @@
         <tbody>
           @foreach ($expenses as $expense)
   <tr>
-      <th scope="row">{{$expense->id}}</th>
       <td>{{$expense->title}}</td>
       <td>{{$expense->amount}}</td>
       <td>
@@ -51,7 +49,8 @@
 @endforeach
         </tbody>
       </table>
-    <h3>Weekly: {{$expenses_by_week}}</h3>
-    <h3>Monthly: {{$expenses_by_month}}</h3>
-    <h3>Annually: {{$annual_expenses}}</h3>
+    <h3>Recurring Weekly: {{$recurring_expenses_by_week}}</h3>
+    <h3>Recurring Monthly: {{$recurring_expenses_by_month}}</h3>
+    <h3>Recurring Annually: {{$recurring_expenses_by_year}}</h3>
+    <a href="/expenses/create">Add new expense</a>
 @endsection
