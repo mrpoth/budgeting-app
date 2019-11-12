@@ -16,31 +16,34 @@ class ExpenseController extends Controller
      */
     public function index()
     {
-        $expenses = DB::table('expenses')->paginate(15);
+        $expenses = Expense::paginate(15);
 
-        $daily_expenses_recurring = DB::table('expenses')->whereRaw('frequency = 1 AND recurring = 1')->sum('amount');
-        $daily_expenses_non_recurring = DB::table('expenses')->where('frequency', '=', '1')->sum('amount');
+        $daily_expenses_recurring = Expense::getRecurringExpensesByDay();
+        $daily_expenses_non_recurring = Expense::getNonRecurringExpensesByDay();
 
-        $weekly_expenses_recurring = DB::table('expenses')->whereRaw('frequency = 7 AND recurring = 1')->sum('amount');
-        $weekly_expenses_non_recurring =DB::table('expenses')->where('frequency', '=', '7')->sum('amount');
+        $weekly_expenses_recurring = Expense::getRecurringExpensesByWeek();
+        $weekly_expenses_non_recurring = Expense::getNonRecurringExpensesByWeek();
 
         //Calculate weekly-only expenses as expressed in a single day. E.g. paying 70 a week means you pay 10/day.
-        $weekly_as_daily = round($weekly_expenses_recurring / 7 , 2);
+        $weekly_as_daily = round($weekly_expenses_recurring / 7, 2);
 
-        $monthly_expenses_recurring = DB::table('expenses')->whereRaw('frequency = 30 AND recurring = 1')->sum('amount');
-        $monthly_expenses_non_recurring = DB::table('expenses')->where('frequency', '=', '30')->sum('amount');
+        $monthly_expenses_recurring = Expense::getRecurringExpensesByMonth();
+        $monthly_expenses_non_recurring = Expense::getNonRecurringExpensesByMonth();
 
         //Calculate monthly-only recurring expenses as expressed in a single day. E.g. paying 30 a month month means you pay 1/day.
         //Not too accurate because it treats every month as having 30 days.
-        $recurring_monthly_as_daily = round($monthly_expenses_recurring / 30 , 2);
+        $recurring_monthly_as_daily = round($monthly_expenses_recurring / 30, 2);
 
-        $annual_expenses_recurring = DB::table('expenses')->whereraw('frequency = 365 AND recurring = 1')->sum('amount');
-        $annual_expenses_non_recurring = DB::table('expenses')->where('frequency', '=', '365')->sum('amount');
+        $annual_expenses_recurring = Expense::getRecurringExpensesByYear();
+        $annual_expenses_non_recurring = Expense::getNonRecurringExpensesByYear();
 
         //Calculate total recurring annual expenses.
-        $recurring_expenses_by_year = ($daily_expenses_recurring * 365) + ($weekly_expenses_recurring * 52) + ($monthly_expenses_recurring *12) + $annual_expenses_recurring;
+        $recurring_expenses_by_year = ($daily_expenses_recurring * 365)
+            + ($weekly_expenses_recurring * 52)
+            + ($monthly_expenses_recurring * 12)
+            + $annual_expenses_recurring;
         //Calculate annual-only recurring expenses as expressed in a single day. E.g. paying 365 a year means you pay 1/day.
-        $annual_as_daily = round($recurring_expenses_by_year / 365 , 2);
+        $annual_as_daily = round($recurring_expenses_by_year / 365, 2);
 
         $recurring_expenses_by_week = round($recurring_expenses_by_year / 52, 2);
         $recurring_expenses_by_month = round($recurring_expenses_by_year / 12, 2);
@@ -51,7 +54,7 @@ class ExpenseController extends Controller
             'recurring_expenses_by_week' => $recurring_expenses_by_week,
             'recurring_expenses_by_month' => $recurring_expenses_by_month,
             'recurring_expenses_by_year' => $recurring_expenses_by_year,
-            ]);
+        ]);
     }
 
     /**
@@ -61,29 +64,23 @@ class ExpenseController extends Controller
      */
     public function create()
     {
-        return view ('expenses.create');
+        return view('expenses.create');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        // $attributes = request([
-        //     'expense_title',
-        //     'expense_amount',
-        //     'expense_frequency',
-        //     'expense_recurring',
-        // ]);
 
-        $attributes = request()->validate([
+        $attributes = $request->validate([
             'title' => ['required', 'min:3'],
             'amount' => ['required', 'numeric'],
-            'frequency' => 'required',
-            'recurring' => ['required', 'boolean']
+            'frequency' => ['required', 'numeric'],
+            'recurring' => ['required', 'boolean'],
         ]);
 
         Expense::create($attributes);
@@ -94,39 +91,39 @@ class ExpenseController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function show(Expense $expense)
     {
-        return view('expenses.show', compact('expense'));
+        return view('expenses.show', ['expense' => $expense]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function edit(Expense $expense)
     {
-        return view('expenses.edit', compact('expense'));
+        return view('expenses.edit', ['expense' => $expense]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Expense $expense)
+    public function update(Expense $expense, Request $request)
     {
-        $expense->update(request([
-            'title',
-            'amount',
-            'frequency',
-            'recurring'
+        $expense->update($request->validate([
+            'title' => ['required', 'min:3'],
+            'amount' => ['required', 'numeric'],
+            'frequency' => ['required', 'numeric'],
+            'recurring' => ['required', 'boolean']
         ]));
 
         return redirect('/expenses');
@@ -135,7 +132,7 @@ class ExpenseController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy(Expense $expense)
