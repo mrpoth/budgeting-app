@@ -17,7 +17,6 @@ class CreateIncomesTable extends Migration
             $table->bigIncrements('id');
             $table->string('title');
             $table->decimal('amount', 10, 2);
-            $table->boolean('recurring');
             $table->string('frequency');
             $table->timestamps();
         });

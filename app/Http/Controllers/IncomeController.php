@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Income;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Response;
 
 class IncomeController extends Controller
 {
@@ -12,45 +12,44 @@ class IncomeController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
-        $incomes = Income::paginate(15);
+        $recurring_incomes = Income::getAllRecurringIncomes();
 
-        $daily_incomes_recurring = income::getRecurringIncomesByDay();
-        $daily_incomes_non_recurring = income::getNonRecurringIncomesByDay();
+        $non_recurring_incomes = Income::getNonRecurringIncomes();
 
-        $weekly_incomes_recurring = income::getRecurringIncomesByWeek();
-        $weekly_incomes_non_recurring = income::getNonRecurringIncomesByWeek();
+        $daily_incomes_recurring = Income::getRecurringIncomesByDay();
 
-        //Calculate weekly-only incomes as expressed in a single day. E.g. paying 70 a week means you pay 10/day.
-        $weekly_as_daily = round($weekly_incomes_recurring / 7, 2);
+        $weekly_incomes_recurring = Income::getRecurringIncomesByWeek();
 
-        $monthly_incomes_recurring = income::getRecurringIncomesByMonth();
-        $monthly_incomes_non_recurring = income::getNonRecurringIncomesByMonth();
+        $monthly_incomes_recurring = Income::getRecurringIncomesByMonth();
 
-        //Calculate monthly-only recurring incomes as expressed in a single day. E.g. paying 30 a month month means you pay 1/day.
-        //Not too accurate because it treats every month as having 30 days.
-        $recurring_monthly_as_daily = round($monthly_incomes_recurring / 30, 2);
-
-        $annual_incomes_recurring = income::getRecurringIncomesByYear();
-        $annual_incomes_non_recurring = income::getNonRecurringIncomesByYear();
+        $annual_incomes_recurring = Income::getRecurringIncomesByYear();
 
         //Calculate total recurring annual incomes.
+        //52.1429 is the number of weeks for more precise calculations
         $recurring_incomes_by_year = ($daily_incomes_recurring * 365)
-            + ($weekly_incomes_recurring * 52)
+            + ($weekly_incomes_recurring * 52.1429)
             + ($monthly_incomes_recurring * 12)
             + $annual_incomes_recurring;
-        //Calculate annual-only recurring incomes as expressed in a single day. E.g. paying 365 a year means you pay 1/day.
-        $annual_as_daily = round($recurring_incomes_by_year / 365, 2);
 
-        $recurring_incomes_by_week = round($recurring_incomes_by_year / 52, 2);
+        $recurring_incomes_by_day = round($recurring_incomes_by_year / 365, 2);
+        $recurring_incomes_by_week = round($recurring_incomes_by_year / 52.1429, 2);
         $recurring_incomes_by_month = round($recurring_incomes_by_year / 12, 2);
+
+        $each_recurring_income_by_day = Income::getEachRecurringIncomeByDay();
+
+        $each_recurring_income_by_week = Income::getEachRecurringIncomeByWeek();
+        $each_recurring_income_by_month = Income::getEachRecurringIncomeByMonth();
+        $each_recurring_income_by_year = Income::getEachRecurringIncomeByYear();
 
 
         return view('incomes.index', [
-            'incomes' => $incomes,
+            'non_recurring_incomes' => $non_recurring_incomes,
+            'recurring_incomes' => $recurring_incomes,
+            'recurring_incomes_by_day' => $recurring_incomes_by_day,
             'recurring_incomes_by_week' => $recurring_incomes_by_week,
             'recurring_incomes_by_month' => $recurring_incomes_by_month,
             'recurring_incomes_by_year' => $recurring_incomes_by_year,
@@ -60,7 +59,7 @@ class IncomeController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create()
     {
@@ -70,8 +69,8 @@ class IncomeController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -80,7 +79,6 @@ class IncomeController extends Controller
             'title' => ['required', 'min:3'],
             'amount' => ['required', 'numeric'],
             'frequency' => ['required', 'numeric'],
-            'recurring' => ['required', 'boolean'],
         ]);
 
         income::create($attributes);
@@ -92,7 +90,7 @@ class IncomeController extends Controller
      * Display the specified resource.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show(Income $income)
     {
@@ -103,7 +101,7 @@ class IncomeController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function edit(Income $income)
     {
@@ -113,9 +111,9 @@ class IncomeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(Income $income, Request $request)
     {
@@ -123,7 +121,6 @@ class IncomeController extends Controller
             'title' => ['required', 'min:3'],
             'amount' => ['required', 'numeric'],
             'frequency' => ['required', 'numeric'],
-            'recurring' => ['required', 'boolean']
         ]));
 
         return redirect('/incomes');
@@ -133,7 +130,7 @@ class IncomeController extends Controller
      * Remove the specified resource from storage.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Income $income)
     {

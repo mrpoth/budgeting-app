@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Expense;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Response;
 
 class ExpenseController extends Controller
 {
@@ -12,45 +12,44 @@ class ExpenseController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
-        $expenses = Expense::paginate(15);
+        $recurring_expenses = Expense::getAllRecurringExpenses();
+
+        $non_recurring_expenses = Expense::getNonRecurringExpenses();
 
         $daily_expenses_recurring = Expense::getRecurringExpensesByDay();
-        $daily_expenses_non_recurring = Expense::getNonRecurringExpensesByDay();
 
         $weekly_expenses_recurring = Expense::getRecurringExpensesByWeek();
-        $weekly_expenses_non_recurring = Expense::getNonRecurringExpensesByWeek();
-
-        //Calculate weekly-only expenses as expressed in a single day. E.g. paying 70 a week means you pay 10/day.
-        $weekly_as_daily = round($weekly_expenses_recurring / 7, 2);
 
         $monthly_expenses_recurring = Expense::getRecurringExpensesByMonth();
-        $monthly_expenses_non_recurring = Expense::getNonRecurringExpensesByMonth();
-
-        //Calculate monthly-only recurring expenses as expressed in a single day. E.g. paying 30 a month month means you pay 1/day.
-        //Not too accurate because it treats every month as having 30 days.
-        $recurring_monthly_as_daily = round($monthly_expenses_recurring / 30, 2);
 
         $annual_expenses_recurring = Expense::getRecurringExpensesByYear();
-        $annual_expenses_non_recurring = Expense::getNonRecurringExpensesByYear();
 
         //Calculate total recurring annual expenses.
+        //52.1429 is the number of weeks for more precise calculations
         $recurring_expenses_by_year = ($daily_expenses_recurring * 365)
-            + ($weekly_expenses_recurring * 52)
+            + ($weekly_expenses_recurring * 52.1429)
             + ($monthly_expenses_recurring * 12)
             + $annual_expenses_recurring;
-        //Calculate annual-only recurring expenses as expressed in a single day. E.g. paying 365 a year means you pay 1/day.
-        $annual_as_daily = round($recurring_expenses_by_year / 365, 2);
 
-        $recurring_expenses_by_week = round($recurring_expenses_by_year / 52, 2);
+        $recurring_expenses_by_day = round($recurring_expenses_by_year / 365, 2);
+        $recurring_expenses_by_week = round($recurring_expenses_by_year / 52.1429, 2);
         $recurring_expenses_by_month = round($recurring_expenses_by_year / 12, 2);
+
+        $each_recurring_expense_by_day = Expense::getEachRecurringExpenseByDay();
+
+        $each_recurring_expense_by_week = Expense::getEachRecurringExpenseByWeek();
+        $each_recurring_expense_by_month = Expense::getEachRecurringExpenseByMonth();
+        $each_recurring_expense_by_year = Expense::getEachRecurringExpenseByYear();
 
 
         return view('expenses.index', [
-            'expenses' => $expenses,
+            'non_recurring_expenses' => $non_recurring_expenses,
+            'recurring_expenses' => $recurring_expenses,
+            'recurring_expenses_by_day' => $recurring_expenses_by_day,
             'recurring_expenses_by_week' => $recurring_expenses_by_week,
             'recurring_expenses_by_month' => $recurring_expenses_by_month,
             'recurring_expenses_by_year' => $recurring_expenses_by_year,
@@ -60,7 +59,7 @@ class ExpenseController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create()
     {
@@ -70,8 +69,8 @@ class ExpenseController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -80,10 +79,9 @@ class ExpenseController extends Controller
             'title' => ['required', 'min:3'],
             'amount' => ['required', 'numeric'],
             'frequency' => ['required', 'numeric'],
-            'recurring' => ['required', 'boolean'],
         ]);
 
-        Expense::create($attributes);
+        expense::create($attributes);
 
         return redirect('/expenses');
     }
@@ -92,7 +90,7 @@ class ExpenseController extends Controller
      * Display the specified resource.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show(Expense $expense)
     {
@@ -103,7 +101,7 @@ class ExpenseController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function edit(Expense $expense)
     {
@@ -113,9 +111,9 @@ class ExpenseController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(Expense $expense, Request $request)
     {
@@ -123,7 +121,6 @@ class ExpenseController extends Controller
             'title' => ['required', 'min:3'],
             'amount' => ['required', 'numeric'],
             'frequency' => ['required', 'numeric'],
-            'recurring' => ['required', 'boolean']
         ]));
 
         return redirect('/expenses');
@@ -133,7 +130,7 @@ class ExpenseController extends Controller
      * Remove the specified resource from storage.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Expense $expense)
     {

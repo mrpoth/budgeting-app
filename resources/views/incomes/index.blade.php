@@ -2,25 +2,39 @@
 
 @section('body')
     <div class="content-container">
-        <h1>Your income Stats</h1>
-        <h2>incomes</h2>
+        <h2>One-off incomes</h2>
         <table class="table table-dark">
             <thead>
             <tr>
-                <th scope="col">income</th>
+                <th scope="col">Income</th>
                 <th scope="col">Amount</th>
-                <th scope="col">Frequency</th>
-                <th scope="col">Recurring</th>
-                <th scope="col">Edit</th>
             </tr>
             </thead>
             <tbody>
-            @foreach ($incomes as $income)
+            @foreach ($non_recurring_incomes as $non_recurring_income)
                 <tr>
-                    <td>{{$income->title}}</td>
-                    <td>{{$income->amount}}</td>
+                    <td>{{$non_recurring_income->title}}</td>
+                    <td>{{$non_recurring_income->amount}}</td>
+                    <td><a href="/incomes/{{$non_recurring_income->id}}/edit">Edit</a></td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+        <h2>Recurring incomes</h2>
+        <table class="table table-dark">
+            <thead>
+            <tr>
+                <th scope="col">Income</th>
+                <th scope="col">Frequency</th>
+                <th scope="col">Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                @foreach ($recurring_incomes as $recurring_income)
+                    <td>{{$recurring_income->title}}</td>
                     <td>
-                        @switch($income->frequency)
+                        @switch($recurring_income->frequency)
                             @case(1)
                             Daily
                             @break
@@ -34,24 +48,34 @@
                             Annually
                             @break
                             @default
-
                         @endswitch
                     </td>
-                    <td>
-                        @if ($income->recurring)
-                            Yes
-                        @else
-                            No
-                        @endif
-                    </td>
-                    <td><a href="/incomes/{{$income->id}}/edit">Edit</a></td>
-                </tr>
+                    <td>{{$recurring_income->amount}}</td>
+                    <td><a href="/incomes/{{$recurring_income->id}}/edit">Edit</a></td>
+            </tr>
             @endforeach
             </tbody>
         </table>
-        <h3>Recurring Weekly: {{$recurring_incomes_by_week}}</h3>
-        <h3>Recurring Monthly: {{$recurring_incomes_by_month}}</h3>
-        <h3>Recurring Annually: {{$recurring_incomes_by_year}}</h3>
+        <h2>Recurring income totals</h2>
+        <table class="table table-dark">
+            <thead>
+            <tr>
+                <th scope="col">Daily</th>
+                <th scope="col">Weekly</th>
+                <th scope="col">Monthly</th>
+                <th scope="col">Annually</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{$recurring_incomes_by_day}}</td>
+                <td>{{$recurring_incomes_by_week}}</td>
+                <td>{{$recurring_incomes_by_month}}</td>
+                <td>{{$recurring_incomes_by_year}}</td>
+            </tr>
+            </tbody>
+        </table>
         <a href="/incomes/create">Add new income</a>
     </div>
 @endsection
+
