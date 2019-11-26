@@ -1,11 +1,11 @@
-#A simple Laravel budgeting app
+# A simple Laravel budgeting app
 
 This budgeting app is incredibly simple and was mostly made for a few reasons:
 1. To practice Laravel and learn best practices.
 2. To tinker with deploying an app.
 3. To have a simple app to remember my expenses!
 
-##Features
+## Features
 
 Not a whole lot to talk about here. You can enter incomes and expenses and choose between various levels of frequency:
 
@@ -21,11 +21,11 @@ There are 3 separate tables:
 2. List of recurring items.
 3. Totals
 
-##Tech used:
+## Tech used:
 
 Mainly Laravel due to the reasons stated above. Front-end with Bootstrap just to save time.
 
-##How to use
+## How to use
 
 1. Clone.
 2. Run the following:
